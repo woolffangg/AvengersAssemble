@@ -15,7 +15,7 @@
     <div class="form-group">
       <input name="mdp" type="password" placeholder="Mot de passe" required>
     </div>
-    <button type="submit">S'inscrire</button>
+    <button class="button" type="submit">S'inscrire</button>
     <?php if (!empty($error)) echo '<div style="color:red">' . $error . '</div>'; ?>
     <?php if (!empty($success)) echo '<div style="color:green">' . $success . '</div>'; ?>
   </form>

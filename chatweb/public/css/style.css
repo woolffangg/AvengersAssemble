@@ -1,2 +1,3 @@
 @import url("base.css");
 @import url("form.css"); /* will include salons.css later */
+@import url("salons.css");
