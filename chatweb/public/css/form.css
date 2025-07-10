@@ -56,6 +56,20 @@ button:hover {
   background-color: var(--color-primary-hover);
 }
 
+/* Style checkbox label to align nicely with input */
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.checkbox-label input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+}
+
 .error {
   color: var(--color-error);
   text-align: center;
@@ -66,6 +80,21 @@ button:hover {
   color: var(--color-success);
   text-align: center;
   margin-top: 0.5rem;
+}
+
+/* Link back styling */
+.link-back {
+  display: block;
+  margin-top: 1.5rem;
+  text-align: center;
+  color: var(--color-primary);
+  font-weight: 500;
+  font-size: 0.95rem;
+  transition: var(--transition);
+}
+
+.link-back:hover {
+  text-decoration: underline;
 }
 
 a {
