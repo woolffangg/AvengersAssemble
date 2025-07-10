@@ -9,7 +9,7 @@
         <div class="form-group">
             <input type="password" name="mdp" placeholder="Mot de passe" required>
         </div>
-        <button type="submit">Se connecter</button>
+        <button class="button" type="submit">Se connecter</button>
         <?php if (!empty($error)) echo '<div class="error">' . htmlspecialchars($error) . '</div>'; ?>
     </form>
     <a href="index.php?action=register">Créer un compte</a>
