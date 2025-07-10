@@ -4,9 +4,10 @@
 require_once __DIR__ . '/../model/Salon.php';
 require_once __DIR__ . '/../model/Message.php';
 
-class SalonController {
-    public function salons() {
-        session_start();
+class SalonController
+{
+    public function salons()
+    {
         if (!isset($_SESSION['user'])) {
             header('Location: index.php?action=login');
             exit;
@@ -14,8 +15,8 @@ class SalonController {
         $salons = Salon::getAll();
         require __DIR__ . '/../view/salons.php';
     }
-    public function chat() {
-        session_start();
+    public function chat()
+    {
         if (!isset($_SESSION['user'])) {
             header('Location: index.php?action=login');
             exit;
@@ -24,16 +25,16 @@ class SalonController {
         $messages = Message::getBySalon($salon['pkS']);
         require __DIR__ . '/../view/chat.php';
     }
-    public function sendMessage() {
-        session_start();
+    public function sendMessage()
+    {
         if (isset($_SESSION['user'], $_POST['message'], $_GET['id'])) {
             Message::add($_SESSION['user']['pkU'], $_GET['id'], $_POST['message']);
         }
         header('Location: index.php?action=chat&id=' . $_GET['id']);
         exit;
     }
-    public function createSalon() {
-        session_start();
+    public function createSalon()
+    {
         if (!isset($_SESSION['user'])) {
             header('Location: index.php?action=login');
             exit;

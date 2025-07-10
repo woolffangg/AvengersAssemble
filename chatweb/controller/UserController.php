@@ -1,9 +1,10 @@
 <?php
 require_once __DIR__ . '/../service/UserService.php';
 
-class UserController {
-    public function login() {
-        session_start();
+class UserController
+{
+    public function login()
+    {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $user = UserService::login($_POST['login'], $_POST['mdp']);
             if ($user) {
@@ -18,13 +19,15 @@ class UserController {
             require __DIR__ . '/../view/login.php';
         }
     }
-    public function logout() {
-        session_start();
+    public function logout()
+    {
+
         session_destroy();
         header('Location: index.php?action=login');
         exit;
     }
-    public function register() {
+    public function register()
+    {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $pseudo = $_POST['pseudo'] ?? '';
             $login = $_POST['login'] ?? '';
