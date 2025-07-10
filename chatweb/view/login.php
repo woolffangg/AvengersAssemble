@@ -1,9 +1,16 @@
 <?php require __DIR__ . '/partials/header.php'; ?>
-<h2>Connexion</h2>
-<form method="post">
-    <input name="login" placeholder="Login" required>
-    <input name="mdp" type="password" placeholder="Mot de passe" required>
-    <button type="submit">Se connecter</button>
-    <?php if (!empty($error)) echo '<div style="color:red">'.$error.'</div>'; ?>
-</form>
-<a href="index.php?action=register">Créer un compte</a>
+
+<div class="container">
+    <h2>Connexion</h2>
+    <form method="post">
+        <div class="form-group">
+            <input type="text" name="login" placeholder="Login" required>
+        </div>
+        <div class="form-group">
+            <input type="password" name="mdp" placeholder="Mot de passe" required>
+        </div>
+        <button type="submit">Se connecter</button>
+        <?php if (!empty($error)) echo '<div class="error">' . htmlspecialchars($error) . '</div>'; ?>
+    </form>
+    <a href="index.php?action=register">Créer un compte</a>
+</div>

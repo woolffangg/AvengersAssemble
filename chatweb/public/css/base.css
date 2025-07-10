@@ -1,0 +1,36 @@
+:root {
+  --color-primary: #007bff;
+  --color-primary-hover: #0062cc;
+  --color-bg: #f5f7fa;
+  --color-text: #1c1e21;
+  --color-error: #e63946;
+  --color-success: #2ecc71;
+  --color-white: #ffffff;
+  --color-border: #dfe3e8;
+
+  --radius: 8px;
+  --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  --transition: all 0.2s ease;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  background-color: var(--color-bg);
+  color: var(--color-text);
+}
+
+a {
+  text-decoration: none;
+  color: var(--color-primary);
+  transition: var(--transition);
+}
+
+a:hover {
+  text-decoration: underline;
+}
