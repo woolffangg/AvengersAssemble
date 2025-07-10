@@ -6,12 +6,18 @@ require_once '../controller/SalonController.php';
 
 $action = $_GET['action'] ?? 'login';
 
-// Define routes that don't need the user to be logged in
+// Routes that don't require login
 $publicRoutes = ['login', 'register', 'logout'];
 
-// Protect all other routes
+// Redirect if trying to access protected routes while not logged in
 if (!in_array($action, $publicRoutes) && !isset($_SESSION['user'])) {
     header('Location: index.php?action=login');
+    exit;
+}
+
+// Redirect if trying to access login/register while already logged in
+if (in_array($action, ['login', 'register']) && isset($_SESSION['user'])) {
+    header('Location: index.php?action=salons');
     exit;
 }
 
