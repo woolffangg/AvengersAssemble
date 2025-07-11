@@ -14,4 +14,22 @@ class Message {
         $stmt = $db->prepare('INSERT INTO Message (fkU, fkS, message) VALUES (?, ?, ?)');
         return $stmt->execute([$fkU, $fkS, $message]);
     }
+    public static function getLastMessages($salonId) {
+        $pdo = DB::connect();
+
+        $sql = "SELECT m.pkMsg, u.pseudo, m.message, m.timestamp
+                FROM Message m
+                JOIN Utilisateur u ON u.pkU = m.fkU
+                WHERE m.fkS = :salonId
+                ORDER BY m.pkMsg ASC";
+        
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute(['salonId' => $salonId]);
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+    
+    
+
+    
 }
