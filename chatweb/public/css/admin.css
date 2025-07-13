@@ -1,0 +1,135 @@
+
+
+/* --- ADMIN PANEL LIGHT THEME --- */
+.admin-container {
+  max-width: 1100px;
+  margin: 40px auto;
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 6px 32px #0002;
+  padding: 36px 32px 28px 32px;
+  color: #23272f;
+  font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
+}
+.admin-container h2 {
+  text-align: center;
+  margin-bottom: 32px;
+  color: #1a7fd7;
+  letter-spacing: 1.5px;
+  font-size: 2.1em;
+  font-weight: 700;
+}
+.admin-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: #f7fafd;
+  border-radius: 14px;
+  overflow: hidden;
+  margin-bottom: 22px;
+  font-size: 1.08em;
+  box-shadow: 0 2px 12px #0001;
+  display: table;
+}
+.admin-table th {
+  position: sticky;
+  top: 0;
+  background: #eaf2fb;
+  color: #1a7fd7;
+  font-weight: 700;
+  border-bottom: 2.5px solid #1a7fd733;
+  z-index: 2;
+  padding: 16px 10px;
+  letter-spacing: 0.5px;
+  font-size: 1.08em;
+}
+.admin-table td {
+  padding: 14px 10px;
+  text-align: center;
+  border-bottom: 1px solid #e3e8ee;
+}
+.admin-table tr {
+  transition: background 0.18s;
+}
+.admin-table tr:nth-child(even) {
+  background: #f7fafd;
+}
+.admin-table tr:nth-child(odd) {
+  background: #f0f4f8;
+}
+.admin-table tr:hover {
+  background: #eaf2fb;
+}
+.admin-table input[type="text"], .admin-table input[type="number"], .admin-table select {
+  background: #fff;
+  color: #1a7fd7;
+  border: 1.5px solid #1a7fd733;
+  border-radius: 6px;
+  padding: 5px 10px;
+  width: 120px;
+  font-size: 1em;
+  outline: none;
+  transition: border 0.2s, box-shadow 0.2s;
+  box-shadow: 0 1px 4px #1a7fd70a;
+}
+.admin-table input[type="text"]:focus, .admin-table input[type="number"]:focus, .admin-table select:focus {
+  border: 1.5px solid #1a7fd7;
+  box-shadow: 0 2px 8px #1a7fd722;
+}
+.admin-table button {
+  background: linear-gradient(90deg, #1a7fd7 60%, #4fc3f7 100%);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 7px 18px;
+  margin: 0 2px;
+  font-weight: 700;
+  font-size: 1em;
+  cursor: pointer;
+  box-shadow: 0 2px 8px #1a7fd722;
+  transition: background 0.18s, color 0.18s, box-shadow 0.18s;
+}
+.admin-table button:hover {
+  background: linear-gradient(90deg, #4fc3f7 60%, #1a7fd7 100%);
+  color: #1a7fd7;
+  box-shadow: 0 4px 16px #1a7fd744;
+}
+.admin-nav {
+  text-align: right;
+  margin: 0 0 14px 0;
+}
+.admin-nav a {
+  color: #1a7fd7;
+  font-weight: bold;
+  text-decoration: none;
+  background: #eaf2fb;
+  padding: 8px 24px;
+  border-radius: 9px;
+  margin-left: 14px;
+  font-size: 1.08em;
+  transition: background 0.18s, color 0.18s, box-shadow 0.18s;
+  box-shadow: 0 1px 4px #1a7fd70a;
+}
+.admin-nav a:hover {
+  background: #1a7fd7;
+  color: #fff;
+  box-shadow: 0 2px 8px #1a7fd722;
+}
+.link-back {
+  display: inline-block;
+  margin-top: 22px;
+  color: #1a7fd7;
+  background: #eaf2fb;
+  padding: 9px 26px;
+  border-radius: 9px;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 1.08em;
+  transition: background 0.18s, color 0.18s, box-shadow 0.18s;
+  box-shadow: 0 1px 4px #1a7fd70a;
+}
+.link-back:hover {
+  background: #1a7fd7;
+  color: #fff;
+  box-shadow: 0 2px 8px #1a7fd722;
+}

@@ -22,6 +22,33 @@ if (in_array($action, ['login', 'register']) && isset($_SESSION['user'])) {
 }
 
 switch ($action) {
+    case 'kickMember':
+        (new SalonController())->kickMember();
+        break;
+    case 'toggleVisibility':
+        (new SalonController())->toggleVisibility();
+        break;
+    case 'quitSalon':
+        (new SalonController())->quitSalon();
+        break;
+    case 'inviteMember':
+        (new SalonController())->inviteMember();
+        break;
+    case 'adminPanel':
+        (new SalonController())->adminPanel();
+        break;
+    case 'deleteSalon':
+        (new SalonController())->deleteSalon();
+        break;
+    case 'joinSalon':
+        (new SalonController())->joinSalon();
+        break;
+    case 'editTopic':
+        (new SalonController())->editTopic();
+        break;
+    case 'changeOwner':
+        (new SalonController())->changeOwner();
+        break;
     case 'login':
         (new UserController())->login();
         break;

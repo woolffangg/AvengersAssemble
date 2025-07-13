@@ -3,6 +3,10 @@ require_once __DIR__ . '/DB.php';
 
 class User
 {
+    public static function getAll() {
+        $db = DB::connect();
+        return $db->query('SELECT pkU, pseudo FROM Utilisateur')->fetchAll(PDO::FETCH_ASSOC);
+    }
     public static function findByLogin($login)
     {
         $db = DB::connect();
