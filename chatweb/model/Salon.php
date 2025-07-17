@@ -1,55 +1,196 @@
 <?php
-// Classe Salon pour la gestion des salons
-require_once __DIR__ . '/DB.php';
+// model/Salon.php - Modèle métier pour les salons
+require_once __DIR__ . '/../dao/SalonDAO.php';
+require_once __DIR__ . '/../dao/MembreDAO.php';
+require_once __DIR__ . '/../dao/UserDAO.php';
 
-class Salon {
-    // Ajoute un membre à un salon (invitation directe)
-    public static function addMember($salonId, $userId) {
-        $db = DB::connect();
-        $stmt = $db->prepare('INSERT IGNORE INTO membre (fkU, fkS) VALUES (?, ?)');
-        return $stmt->execute([$userId, $salonId]);
-    }
-    public static function getAll() {
-        $db = DB::connect();
-        return $db->query('SELECT * FROM Salon')->fetchAll(PDO::FETCH_ASSOC);
+class Salon
+{
+    private $pkS;
+    private $nom;
+    private $topic;
+    private $fkU_proprio;
+    private $prive;
+    private $visibilite;
+
+    /**
+     * Constructeur
+     */
+    public function __construct($pkS = null, $nom = null, $topic = '', $fkU_proprio = null, $prive = 0, $visibilite = 1) {
+        $this->pkS = $pkS;
+        $this->nom = $nom;
+        $this->topic = $topic;
+        $this->fkU_proprio = $fkU_proprio;
+        $this->prive = $prive;
+        $this->visibilite = $visibilite;
     }
 
-    // Get all salons with owner pseudo
-    public static function getAllWithOwner() {
-        $db = DB::connect();
-        $sql = 'SELECT s.*, u.pseudo AS proprio FROM Salon s LEFT JOIN Utilisateur u ON s.fkU_proprio = u.pkU';
-        return $db->query($sql)->fetchAll(PDO::FETCH_ASSOC);
+    // Getters
+    public function getId() { return $this->pkS; }
+    public function getNom() { return $this->nom; }
+    public function getTopic() { return $this->topic; }
+    public function getProprietaireId() { return $this->fkU_proprio; }
+    public function getPrive() { return $this->prive; }
+    public function getVisibilite() { return $this->visibilite; }
+
+    // Setters
+    public function setNom($nom) { $this->nom = $nom; }
+    public function setTopic($topic) { $this->topic = $topic; }
+    public function setPrive($prive) { $this->prive = $prive; }
+    public function setVisibilite($visibilite) { $this->visibilite = $visibilite; }
+
+    /**
+     * Vérifie si un utilisateur peut accéder à ce salon
+     * @param int $userId
+     * @return bool
+     */
+    public function canUserAccess($userId) {
+        // Salon public : tout le monde peut y accéder
+        if (!$this->prive) {
+            return true;
+        }
+        
+        // Salon privé : vérifier l'appartenance
+        return MembreDAO::isMember($userId, $this->pkS);
     }
+
+    /**
+     * Vérifie si un utilisateur peut gérer ce salon (propriétaire ou admin)
+     * @param int $userId
+     * @return bool
+     */
+    public function canUserManage($userId) {
+        // Le propriétaire peut toujours gérer
+        if ($this->fkU_proprio == $userId) {
+            return true;
+        }
+
+        // Vérifier si c'est un admin
+        $user = UserDAO::findById($userId);
+        return $user && $user['fkRole'] == 2;
+    }
+
+    /**
+     * Ajoute un membre au salon
+     * @param int $userId
+     * @return bool
+     */
+    public function addMember($userId) {
+        return MembreDAO::addMember($userId, $this->pkS);
+    }
+
+    /**
+     * Supprime un membre du salon
+     * @param int $userId
+     * @return bool
+     */
+    public function removeMember($userId) {
+        return MembreDAO::removeMember($userId, $this->pkS);
+    }
+
+    /**
+     * Bascule la visibilité du salon
+     * @return bool
+     */
+    public function toggleVisibility() {
+        $newVisibilite = $this->visibilite ? 0 : 1;
+        $success = SalonDAO::updateVisibility($this->pkS, $newVisibilite);
+        if ($success) {
+            $this->visibilite = $newVisibilite;
+        }
+        return $success;
+    }
+
+    /**
+     * Récupère les membres du salon
+     * @return array
+     */
+    public function getMembers() {
+        return MembreDAO::findMembersBySalon($this->pkS);
+    }
+
+    /**
+     * Sauvegarde le salon en base
+     * @return bool
+     */
+    public function save() {
+        if ($this->pkS) {
+            $data = [
+                'nom' => $this->nom,
+                'topic' => $this->topic,
+                'prive' => $this->prive,
+                'visibilite' => $this->visibilite
+            ];
+            return SalonDAO::update($this->pkS, $data);
+        } else {
+            $id = SalonDAO::create($this->nom, $this->fkU_proprio, $this->topic, $this->prive);
+            if ($id) {
+                $this->pkS = $id;
+                return true;
+            }
+            return false;
+        }
+    }
+
+    /**
+     * Convertit l'objet en tableau pour compatibilité avec les vues
+     * @return array
+     */
+    public function toArray() {
+        return [
+            'pkS' => $this->pkS,
+            'nom' => $this->nom,
+            'topic' => $this->topic,
+            'fkU_proprio' => $this->fkU_proprio,
+            'prive' => $this->prive,
+            'visibilite' => $this->visibilite
+        ];
+    }
+
+    /**
+     * Crée une instance Salon à partir d'un tableau de données
+     * @param array $data
+     * @return Salon|null
+     */
+    public static function fromArray($data) {
+        if (!$data) return null;
+        return new Salon(
+            $data['pkS'] ?? null,
+            $data['nom'] ?? null,
+            $data['topic'] ?? null,
+            $data['fkU_proprio'] ?? null,
+            $data['prive'] ?? null,
+            $data['visibilite'] ?? null
+        );
+    }
+
+    // Méthodes statiques (délégation vers DAO)
     public static function getById($id) {
-        $db = DB::connect();
-        $stmt = $db->prepare('SELECT * FROM Salon WHERE pkS = ?');
-        $stmt->execute([$id]);
-        return $stmt->fetch(PDO::FETCH_ASSOC);
+        $data = SalonDAO::findById($id);
+        return $data ? self::fromArray($data) : null;
+    }
+
+    public static function getAll() {
+        return SalonDAO::findAll();
+    }
+
+    public static function getAllWithOwner() {
+        return SalonDAO::findAllWithOwner();
+    }
+
+    public static function create($nom, $proprietaireId, $topic = '', $prive = 0) {
+        return SalonDAO::create($nom, $proprietaireId, $topic, $prive);
     }
 
     public static function delete($id) {
-        $db = DB::connect();
-        $stmt = $db->prepare('DELETE FROM Salon WHERE pkS = ?');
-        return $stmt->execute([$id]);
+        return SalonDAO::delete($id);
     }
 
     public static function updateTopic($id, $topic) {
-        $db = DB::connect();
-        $stmt = $db->prepare('UPDATE Salon SET topic = ? WHERE pkS = ?');
-        return $stmt->execute([$topic, $id]);
+        return SalonDAO::updateTopic($id, $topic);
     }
 
-    public static function changeOwner($id, $newOwner) {
-        $db = DB::connect();
-        $stmt = $db->prepare('UPDATE Salon SET fkU_proprio = ? WHERE pkS = ?');
-        return $stmt->execute([$newOwner, $id]);
-    }
-    public static function create($nom, $fkU_proprio, $topic = '', $prive = 0) {
-        $db = DB::connect();
-        $stmt = $db->prepare('INSERT INTO Salon (nom, fkU_proprio, topic, prive) VALUES (?, ?, ?, ?)');
-        if ($stmt->execute([$nom, $fkU_proprio, $topic, $prive])) {
-            return $db->lastInsertId();
-        }
-        return false;
+    public static function changeOwner($id, $newOwnerId) {
+        return SalonDAO::changeOwner($id, $newOwnerId);
     }
 }

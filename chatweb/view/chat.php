@@ -2,15 +2,7 @@
 
 <div class="container chat-container">
 <?php if (isset($_SESSION['user']) && $salon['fkU_proprio'] == $_SESSION['user']['pkU']): ?>
-    <?php
-        require_once __DIR__ . '/../model/User.php';
-        $users = User::getAll();
-        // Récupérer les membres du salon (hors proprio)
-        $db = DB::connect();
-        $stmt = $db->prepare('SELECT u.pkU, u.pseudo FROM membre m JOIN Utilisateur u ON u.pkU = m.fkU WHERE m.fkS = ? AND u.pkU != ?');
-        $stmt->execute([$salon['pkS'], $_SESSION['user']['pkU']]);
-        $membres = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    ?>
+    <?php // Les variables $users et $membres sont préparées par le contrôleur (4-tiers/MVC) ?>
     <form method="post" action="index.php?action=inviteMember" style="margin-bottom:18px;display:flex;gap:10px;align-items:center;">
         <input type="hidden" name="salon_id" value="<?= $salon['pkS'] ?>">
         <label for="invite-user" style="font-weight:600;">Inviter un membre :</label>

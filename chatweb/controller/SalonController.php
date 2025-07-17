@@ -1,202 +1,255 @@
 
-   
 <?php
-// Contrôleur pour la gestion des salons
-
+// controller/SalonController.php - Contrôleur pour la gestion des salons
 require_once __DIR__ . '/../model/Salon.php';
 require_once __DIR__ . '/../model/Message.php';
 require_once __DIR__ . '/../service/SalonService.php';
+require_once __DIR__ . '/../dao/SalonDAO.php';
+require_once __DIR__ . '/../dao/MembreDAO.php';
+require_once __DIR__ . '/../model/DB.php';
 
 class SalonController
 {
-
-    // Permet au proprio d'exclure un membre de son salon
+    /**
+     * Permet au propriétaire d'exclure un membre de son salon
+     */
     public function kickMember() {
         if (!isset($_SESSION['user'], $_POST['salon_id'], $_POST['user_id'])) {
             header('Location: index.php?action=salons');
             exit;
         }
-        $salon = Salon::getById($_POST['salon_id']);
-        if ($salon && $salon['fkU_proprio'] == $_SESSION['user']['pkU']) {
+        
+        $salonObj = Salon::getById($_POST['salon_id']);
+        if ($salonObj && $salonObj->canUserManage($_SESSION['user']['pkU'])) {
+            // Utiliser le service pour supprimer le membre
             SalonService::removeMember($_POST['salon_id'], $_POST['user_id']);
         }
+        
         header('Location: index.php?action=chat&id=' . $_POST['salon_id']);
         exit;
     }
 
+    /**
+     * Basculer la visibilité d'un salon
+     */
     public function toggleVisibility() {
         if (!isset($_SESSION['user'], $_POST['salon_id'])) {
             header('Location: index.php?action=salons');
             exit;
         }
-        $salon = Salon::getById($_POST['salon_id']);
-        if ($salon && $salon['fkU_proprio'] == $_SESSION['user']['pkU']) {
-            $newVisibilite = $salon['visibilite'] ? 0 : 1;
-            $db = DB::connect();
-            $stmt = $db->prepare('UPDATE Salon SET visibilite = ? WHERE pkS = ?');
-            $stmt->execute([$newVisibilite, $salon['pkS']]);
+        
+        $salonObj = Salon::getById($_POST['salon_id']);
+        if ($salonObj && $salonObj->canUserManage($_SESSION['user']['pkU'])) {
+            // Utiliser la méthode du modèle
+            $salonObj->toggleVisibility();
         }
+        
         header('Location: index.php?action=chat&id=' . $_POST['salon_id']);
         exit;
     }
-    // Permet à un utilisateur de quitter un salon privé
+
+    /**
+     * Permet à un utilisateur de quitter un salon privé
+     */
     public function quitSalon() {
         if (!isset($_SESSION['user'], $_POST['salon_id'])) {
             header('Location: index.php?action=salons');
             exit;
         }
+        
         $userId = $_SESSION['user']['pkU'];
         $salonId = $_POST['salon_id'];
+        
+        // Utiliser le service qui maintenant utilise les DAOs
         SalonService::removeMember($salonId, $userId);
+        
         header('Location: index.php?action=salons');
         exit;
     }
 
-    // Inviter un utilisateur dans un salon privé (proprio seulement)
+    /**
+     * Inviter un utilisateur dans un salon privé (propriétaire seulement)
+     */
     public function inviteMember() {
         if (!isset($_SESSION['user'], $_POST['salon_id'], $_POST['user_id'])) {
             header('Location: index.php?action=salons');
             exit;
         }
-        $salon = Salon::getById($_POST['salon_id']);
-        if ($salon && $salon['fkU_proprio'] == $_SESSION['user']['pkU'] && $salon['prive']) {
+        
+        $salonObj = Salon::getById($_POST['salon_id']);
+        if ($salonObj && $salonObj->canUserManage($_SESSION['user']['pkU']) && $salonObj->getPrive()) {
             SalonService::addMember($_POST['salon_id'], $_POST['user_id']);
         }
+        
         header('Location: index.php?action=chat&id=' . $_POST['salon_id']);
         exit;
     }
-    // Admin panel for salons
+
+    /**
+     * Panneau d'administration des salons
+     */
     public function adminPanel() {
         if (!isset($_SESSION['user']) || $_SESSION['user']['fkRole'] != 2) {
             header('Location: index.php?action=salons');
             exit;
         }
+        
         $salons = Salon::getAllWithOwner();
         require_once __DIR__ . '/../model/User.php';
         $users = User::getAll();
         require __DIR__ . '/../view/adminPanel.php';
     }
 
-    // Delete a salon
+    /**
+     * Supprimer un salon (admin uniquement)
+     */
     public function deleteSalon() {
         if (!isset($_SESSION['user']) || $_SESSION['user']['fkRole'] != 2) {
             header('Location: index.php?action=salons');
             exit;
         }
+        
         if (isset($_POST['id'])) {
             Salon::delete($_POST['id']);
         }
+        
         header('Location: index.php?action=adminPanel');
         exit;
     }
 
-    // Join a salon as admin
+    /**
+     * Rejoindre un salon en tant qu'admin
+     */
     public function joinSalon() {
         if (!isset($_SESSION['user']) || $_SESSION['user']['fkRole'] != 2) {
             header('Location: index.php?action=salons');
             exit;
         }
+        
         if (isset($_POST['id'])) {
-            // Add admin as member if not already
-            $db = DB::connect();
-            $stmt = $db->prepare('INSERT IGNORE INTO membre (fkU, fkS) VALUES (?, ?)');
-            $stmt->execute([$_SESSION['user']['pkU'], $_POST['id']]);
+            // Ajouter l'admin comme membre s'il ne l'est pas déjà
+            SalonService::addMember($_POST['id'], $_SESSION['user']['pkU']);
         }
+        
         header('Location: index.php?action=chat&id=' . $_POST['id']);
         exit;
     }
 
-    // Edit topic of a salon
+    /**
+     * Modifier le topic d'un salon
+     */
     public function editTopic() {
         if (!isset($_SESSION['user']) || $_SESSION['user']['fkRole'] != 2) {
             header('Location: index.php?action=salons');
             exit;
         }
+        
         if (isset($_POST['id'], $_POST['topic'])) {
             Salon::updateTopic($_POST['id'], $_POST['topic']);
         }
+        
         header('Location: index.php?action=adminPanel');
         exit;
     }
 
-    // Change owner of a salon
+    /**
+     * Changer le propriétaire d'un salon
+     */
     public function changeOwner() {
         if (!isset($_SESSION['user']) || $_SESSION['user']['fkRole'] != 2) {
             header('Location: index.php?action=salons');
             exit;
         }
+        
         if (isset($_POST['id'], $_POST['new_owner'])) {
             Salon::changeOwner($_POST['id'], $_POST['new_owner']);
         }
+        
         header('Location: index.php?action=adminPanel');
         exit;
     }
-    public function salons()
-    {
+
+    /**
+     * Afficher la liste des salons
+     */
+    public function salons() {
         if (!isset($_SESSION['user'])) {
             header('Location: index.php?action=login');
             exit;
         }
+        
         $userId = $_SESSION['user']['pkU'];
-        $db = DB::connect();
-        $sql = "SELECT s.* FROM Salon s
-                LEFT JOIN membre m ON m.fkS = s.pkS AND m.fkU = ?
-                WHERE s.prive = 0 OR m.fkU IS NOT NULL";
-        $stmt = $db->prepare($sql);
-        $stmt->execute([$userId]);
-        $salons = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $salons = SalonService::getSalonsForUser($userId);
         require __DIR__ . '/../view/salons.php';
     }
-    public function chat()
-    {
-        $start = microtime(true);
+
+    /**
+     * Afficher le chat d'un salon
+     */
+    public function chat() {
         if (!isset($_SESSION['user'])) {
             header('Location: index.php?action=login');
             exit;
         }
-        $salon = Salon::getById($_GET['id'] ?? 1);
-        $messages = Message::getBySalon($salon['pkS']);
+        
+        $salonId = isset($_GET['id']) ? intval($_GET['id']) : 1;
+        $salonObj = Salon::getById($salonId);
+        
+        if (!$salonObj || !$salonObj->canUserAccess($_SESSION['user']['pkU'])) {
+            header('Location: index.php?action=salons');
+            exit;
+        }
+        
+        // Convertir l'objet Salon en tableau pour la compatibilité avec la vue
+        $salon = $salonObj->toArray();
+        $messages = Message::getBySalon($salonObj->getId());
+        require_once __DIR__ . '/../model/User.php';
+        $users = User::getAll();
+        $membres = SalonService::getMembresSansProprio($salonObj->getId(), $salonObj->getProprietaireId());
         require __DIR__ . '/../view/chat.php';
-        $end = microtime(true);
-        error_log('chat.php load time: ' . round(($end - $start) * 1000) . ' ms');
     }
-    public function sendMessage()
-    {
+
+    /**
+     * Envoyer un message
+     */
+    public function sendMessage() {
         if (isset($_SESSION['user'], $_POST['message'], $_GET['id'])) {
             $userId = $_SESSION['user']['pkU'];
             $salonId = $_GET['id'];
-            // Vérifie que l'utilisateur est membre du salon
-            $db = DB::connect();
-            $stmt = $db->prepare('SELECT 1 FROM membre WHERE fkU = ? AND fkS = ?');
-            $stmt->execute([$userId, $salonId]);
-            if ($stmt->fetch()) {
+            
+            // Vérifier que l'utilisateur peut poster dans ce salon
+            if (Message::canUserPost($userId, $salonId)) {
                 Message::add($userId, $salonId, $_POST['message']);
                 header('Location: index.php?action=chat&id=' . $salonId);
                 exit;
             } else {
-                // Redirige vers la liste des salons si non membre
+                // Rediriger vers la liste des salons si non membre
                 header('Location: index.php?action=salons');
                 exit;
             }
         }
+        
         header('Location: index.php?action=chat&id=' . ($_GET['id'] ?? 1));
         exit;
     }
-    public function createSalon()
-    {
+
+    /**
+     * Créer un nouveau salon
+     */
+    public function createSalon() {
         if (!isset($_SESSION['user'])) {
             header('Location: index.php?action=login');
             exit;
         }
+        
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $nom = $_POST['nom'] ?? '';
             $topic = $_POST['topic'] ?? '';
             $prive = isset($_POST['prive']) ? 1 : 0;
+            
             if ($nom) {
-                $id = Salon::create($nom, $_SESSION['user']['pkU'], $topic, $prive);
+                $id = SalonService::createSalon($nom, $topic, $prive, $_SESSION['user']['pkU']);
                 if ($id) {
-                    // Ajoute le proprio comme membre
-                    SalonService::addMember($id, $_SESSION['user']['pkU']);
                     $success = 'Salon créé !';
                     header('Location: index.php?action=salons');
                     exit;
